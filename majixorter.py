@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  adrianssorter.py
+#  majixsorter.py
 #  
 #  Copyright 2016 David Hayes <david@blackbricksoftware.com>
 #  
@@ -24,7 +24,7 @@
 
 import csv
 import sys
-import os.path
+import os
 
 def main():
 	
@@ -34,8 +34,8 @@ def main():
 	#~ print sys.argv
 	
 	# make sure enough arguements are passed
-	if len(sys.argv)<3:
-		print "Requires two arguements: filename.csv \"Column Heading\" to sort on; optional 3rd arguement for the number of lines to cache in each file (default 500)"
+	if len(sys.argv)<4:
+		print "Requires three arguements: input.csv output.csv \"Column Heading\"; optional 3rd arguement for the number of lines to cache in each file (default 500)\nUsage: python majixorter.py companylist.csv sorted.csv \"Symbol\""
 		return 0
 	
 	# make sure a valid file is passed
@@ -45,19 +45,25 @@ def main():
 		return 0
 		
 	# make sure a column heading is passes
-	sorty = sys.argv[2]
+	output = sys.argv[2]
+	if output=="":
+		print "Please give us a file to spit on"
+		return 0
+		
+	# make sure a column heading is passes
+	sorty = sys.argv[3]
 	if sorty=="":
 		print "Please give us heading to sorty by"
 		return 0
 		
 	# overrride default lines per file
-	if len(sys.argv)>=4:
-		tmp = int(sys.argv[3])
+	if len(sys.argv)>=5:
+		tmp = int(sys.argv[4])
 		if tmp>0:
 			linesperfile=tmp
 	
 	# open the file
-	reader = csv.reader(open("companylist.csv", "r"))
+	reader = csv.reader(open(filename, "r"))
 	lineno = -2
 	linecache = []
 	tmpfiles = []
@@ -95,7 +101,41 @@ def main():
 			# clear the line cache
 			linecache = []	
 	
-	print tmpfiles	
+	# open each tmp file for reading and peel off first row
+	tmplines = []
+	tmpfilereaders = []
+	col = 0
+	for tmpfile in tmpfiles:
+	
+		tmpfilereader = csv.reader(open(tmpfile, "r"))
+		try:
+			tmplines.append([col,tmpfilereader.next()])
+			tmpfilereaders.append(tmpfilereader)
+			col += 1
+		except Exception: 
+			pass
+			
+	# pul lines from each file and compare
+	outputwriter = csv.writer(open(output,'w'))
+	while True:
+		
+		if len(tmplines) == 0:
+			break
+		
+		tmplines.sort(key=lambda tup: tup[1][headerref[sorty]])		
+		first = tmplines.pop(0)
+		outputwriter.writerow(first[1])
+		
+		try:
+			newline = tmpfilereaders[first[0]].next()
+			if newline:
+				tmplines.append([first[0],newline])
+		except Exception: 
+			pass
+	
+	# clean up the temporary files
+	for tmpfile in tmpfiles:
+		os.remove(tmpfile)
 	
 	return 0
 
