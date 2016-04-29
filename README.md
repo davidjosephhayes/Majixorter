@@ -4,4 +4,4 @@ This is a dumb little project I made to bench test sorting a large csv file that
 
 # Usage
 
-`python majixorter.py unsorted.csv sorted.csv \"Column Heading\"`
+`python majixorter.py unsorted.csv sorted.csv "Column Heading to sort by"` optional 4th arguement for the number of lines to stuff in each tmp file.
