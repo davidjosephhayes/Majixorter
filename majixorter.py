@@ -117,6 +117,7 @@ def main():
 			
 	# pul lines from each file and compare
 	outputwriter = csv.writer(open(output,'w'))
+	outputwriter.writerow(header)
 	while True:
 		
 		if len(tmplines) == 0:
